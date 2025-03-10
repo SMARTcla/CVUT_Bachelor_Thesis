@@ -1,0 +1,13 @@
+{% extends 'upload/base.html' %}
+
+{% block content %}
+<div class="content-container">
+    <h2>Видалити файл: {{ document.description }}</h2>
+    <p>Ви впевнені, що хочете видалити цей файл?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Видалити</button>
+        <a href="{% url 'assignment_detail' document.assignment.subject.name document.assignment.id %}" class="btn btn-secondary">Скасувати</a>
+    </form>
+</div>
+{% endblock %}

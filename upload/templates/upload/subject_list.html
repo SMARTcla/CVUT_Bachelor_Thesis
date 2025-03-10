@@ -1,0 +1,39 @@
+<!-- upload/templates/upload/subject_list.html -->
+
+{% extends 'upload/base.html' %}
+
+{% block content %}
+<div class="row">
+    {% for subject in subjects %}
+        <div class="col-md-4 mb-4">
+            <div class="subject-card d-flex flex-column justify-content-between">
+                <div>
+                    <a href="{% url 'upload:subject_detail' subject_name=subject.name %}" class="text-decoration-none text-dark">
+                        <h4>{{ subject.name }}</h4>
+                    </a>
+                    <hr>
+                    <ul class="assignment-list list-unstyled">
+                        {% for assignment in subject.assignments.all|slice:":5" %}
+                            <li class="mb-2">
+                                <a href="{% url 'upload:assignment_detail' subject_name=subject.name assignment_id=assignment.id %}" class="text-decoration-none">
+                                    <strong>{{ assignment.name }}</strong>
+                                </a>
+                                <br>
+                                <small class="text-muted">Deadline: {{ assignment.deadline }}</small>
+                            </li>
+                        {% empty %}
+                            <li>Немає завдань.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="mt-3 text-end">
+                    <a href="{% url 'upload:subject_detail' subject_name=subject.name %}" class="btn btn-secondary">More</a>
+                </div>
+            </div>
+        </div>
+        {% if forloop.counter|divisibleby:"3" and not forloop.last %}
+            </div><div class="row">
+        {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!-- upload/templates/upload/subject_detail.html -->
+
+{% extends 'upload/base.html' %}
+{% load crispy_forms_tags %}
+{% load dict_extras %}
+
+{% block content %}
+<div class="content-container">
+    <!-- Кнопка "Назад" -->
+    <a href="{% url 'upload:subject_list' %}" class="btn btn-secondary mb-4">
+        &larr; Back
+    </a>
+
+    <h2>{{ subject.name }}</h2>
+    <p>{{ subject.description }}</p>
+    <hr>
+    <h3>Homework Assignments</h3>
+    <div class="list-group">
+        {% for assignment in assignments %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'upload:assignment_detail' subject_name=subject.name assignment_id=assignment.id %}">{{ assignment.name }}</a>
+                    <span class="badge bg-primary rounded-pill">
+                        Deadline: {{ assignment.deadline }}
+                    </span>
+                </div>
+                <div class="mt-2">
+                    <strong>Grade:</strong>
+                    {% with grade=grades|get_item:assignment.name %}
+                        {% if grade %}
+                            {{ grade }} / 10
+                        {% else %}
+                            Not Submitted
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        {% empty %}
+            <p>No assignments available for this subject.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+# Ignore IDE specific files
+.idea/
+*.iml
+*.swp
+.vscode/
+.vscode/*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# python venv
+.venv/*
+venv/*
+.venv/*
+*.cfg
