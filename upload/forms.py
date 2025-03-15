@@ -1,5 +1,5 @@
 from django import forms
-from .models import Document
+from .models import Document, Subject, Assignment
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model 
 import os
@@ -18,7 +18,22 @@ class SignUpForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'password1', 'password2')
 
+class SubjectForm(forms.ModelForm):
+    class Meta:
+        model = Subject
+        fields = ['name', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows':4}),
+        }
 
+class AssignmentForm(forms.ModelForm):
+    class Meta:
+        model = Assignment
+        fields = ['name', 'description', 'deadline', 'number', 'max_points', 'max_uploads']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows':4}),
+        }
+    
 def validate_file_extension(value):
     ext = os.path.splitext(value.name)[1]
     valid_extensions = ['.py']

@@ -1,0 +1,38 @@
+<!-- upload/templates/upload/grades_overview.html -->
+{% extends 'upload/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="content-container">
+    <h2>All Subjects Overview</h2>
+    <p class="mb-4">Below is the summary of your assignments across all subjects.</p>
+
+    {% for subject_info in subject_data %}
+        <h3>{{ subject_info.subject.name }}</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Assignment</th>
+                    <th>Deadline</th>
+                    <th>Max Points</th>
+                    <th>Your Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in subject_info.assignments %}
+                <tr>
+                    <td>{{ row.assignment.name }}</td>
+                    <td>{{ row.deadline }}</td>
+                    <td>{{ row.max_points }}</td>
+                    <td>{{ row.user_grade }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="table-secondary">
+                    <td colspan="2"><strong>Total:</strong></td>
+                    <td><strong>{{ subject_info.subject_max }}</strong></td>
+                    <td><strong>{{ subject_info.subject_user }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    {% endfor %}
+</div>
+{% endblock %}

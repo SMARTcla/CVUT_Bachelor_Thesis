@@ -48,6 +48,20 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
+                        {% if is_teacher_flag %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="teacherDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                    Teacher Panel
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="teacherDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'upload:teacher_subject_list' %}">Manage Subjects</a></li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'upload:grades_overview' %}">My Grades</a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ user.username }}
