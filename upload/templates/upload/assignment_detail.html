@@ -11,50 +11,57 @@
     </a>
     <h2>{{ assignment.name }}</h2>
     <p><strong>Deadline:</strong> {{ assignment.deadline }}</p>
+    <p><strong>Max Points:</strong> {{ assignment.max_points }}</p>
+    <p><strong>Max Uploads:</strong> {{ assignment.max_uploads }}</p>
     <p>{{ assignment.get_description_markdown }}</p>
     <hr>
-    <h3>Uploaded Files</h3>
-    <ul class="list-group mb-4">
-        {% for document in documents %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ document.description }}</strong> -
-                    <a href="{{ document.document.url }}">{{ document.document.name }}</a>
-                    <br>
-                    <small class="text-muted">Uploaded at {{ document.uploaded_at }}</small>
-                    {% if document.test_result %}
-                        <br>
-                        <span class="badge {% if 'Passed' in document.test_result %}bg-success{% else %}bg-danger{% endif %}">
-                            {{ document.test_result }}
-                        </span>
-                        <br>
-                        <span class="badge bg-info">
-                            Grade: {{ document.grade }} / 10
-                        </span>
-                    {% endif %}
-                </div>
-                <form action="{% url 'upload:delete_document' pk=document.pk %}" method="post" onsubmit="return confirm('Are you sure you want to delete this file?');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
-            </li>
-        {% empty %}
-            <li class="list-group-item">No files have been uploaded yet.</li>
-        {% endfor %}
-    </ul>
+    <h3>Latest Upload</h3>
+    {% if latest_document %}
+        <!-- Отображаем дату/время последней загрузки как ссылку на страницу с кодом -->
+        <p>
+            <strong>Uploaded at:</strong>
+            <a href="{% url 'upload:document_detail' pk=latest_document.pk %}">
+                {{ latest_document.uploaded_at|date:"d.m.Y H:i" }}
+            </a>
 
-    <!-- Button to Upload Test File (Visible Only to Teachers) -->
+            <!-- Кнопка "Download" -->
+            <a href="{{ latest_document.document.url }}" class="btn btn-sm btn-primary" download>
+                Download
+            </a>
+        </p>
+
+        <!-- Если есть результат теста, покажем -->
+        {% if latest_document.test_result %}
+            <p>
+                <span class="badge {% if 'Passed' in latest_document.test_result %}bg-success{% else %}bg-danger{% endif %}">
+                    {{ latest_document.test_result }}
+                </span>
+                <span class="badge bg-info">
+                    Grade: {{ latest_document.grade }} / {{ assignment.max_points }}
+                </span>
+            </p>
+        {% endif %}
+
+    {% else %}
+        <p>No files have been uploaded yet.</p>
+    {% endif %}
+
     {% if is_teacher %}
-        <a href="{% url 'upload:upload_test_file' subject_abbr=assignment.subject.name assignment_number=assignment.number %}" class="btn btn-secondary mb-4">
+        <a href="{% url 'upload:upload_test_file' subject_abbr=assignment.subject.name assignment_number=assignment.number %}"
+           class="btn btn-secondary mb-4">
             Upload Test File
         </a>
     {% endif %}
 
-    <h3>Upload File</h3>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" class="btn btn-primary">Upload</button>
-    </form>
+    {% if form %}
+        <h3>Upload File</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    {% else %}
+        <p class="text-danger">You cannot upload more files (limit reached).</p>
+    {% endif %}
 </div>
 {% endblock %}

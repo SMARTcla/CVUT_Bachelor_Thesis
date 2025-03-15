@@ -19,7 +19,7 @@ def validate_file_extension(value):
 
 class Subject(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()  # Added description field
+    description = models.TextField()
 
     def __str__(self):
         return self.name
@@ -30,7 +30,9 @@ class Assignment(models.Model):
     description = models.TextField()
     deadline = models.DateField()
     number = models.PositiveIntegerField()
-    
+    max_points = models.PositiveIntegerField(default=10, help_text="Максимальное количество баллов за это задание.")
+    max_uploads = models.PositiveIntegerField(default=20, help_text="Максимальное количество загрузок для студента.")
+
     def __str__(self):
         return self.name
 
@@ -43,8 +45,8 @@ class Document(models.Model):
     description = models.CharField(max_length=255, blank=True)
     document = models.FileField(upload_to=user_directory_path, validators=[validate_file_extension])
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    test_result = models.CharField(max_length=255, blank=True, null=True)  # Field to store test results
-    grade = models.PositiveIntegerField(default=0)  # Added grade field
+    test_result = models.CharField(max_length=255, blank=True, null=True)
+    grade = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.description or self.document.name

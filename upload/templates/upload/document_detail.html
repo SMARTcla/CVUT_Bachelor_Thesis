@@ -1,0 +1,23 @@
+<!-- upload/templates/upload/document_detail.html -->
+
+{% extends 'upload/base.html' %}
+{% block content %}
+<div class="content-container">
+    <h2>File Details</h2>
+    <p><strong>File name:</strong> {{ document.document.name }}</p>
+    <p><strong>Uploaded at:</strong> {{ document.uploaded_at }}</p>
+    <p><strong>Test Result:</strong> {{ document.test_result }}</p>
+    <p><strong>Grade:</strong> {{ document.grade }}</p>
+    <hr>
+
+    <h4>Code Content:</h4>
+    {% if code_content %}
+        <pre>{{ code_content|escape }}</pre>
+    {% else %}
+        <p class="text-danger">No code found.</p>
+    {% endif %}
+
+    <a href="{{ document.document.url }}" class="btn btn-primary" download>Download</a>
+    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}

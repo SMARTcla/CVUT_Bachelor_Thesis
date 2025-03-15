@@ -14,3 +14,9 @@ Thumbs.db
 venv/*
 .venv/*
 *.cfg
+
+# media files
+media/
+
+# Database files
+*.sqlite3

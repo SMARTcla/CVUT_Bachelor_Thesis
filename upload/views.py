@@ -7,12 +7,94 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import TestFileForm, DocumentForm, SignUpForm
+from .forms import TestFileForm, DocumentForm, SignUpForm, SubjectForm, AssignmentForm
 from .models import Document, Subject, Assignment
 from django.contrib import messages
 
 def is_teacher(user):
     return user.is_superuser or user.groups.filter(name='Teachers').exists()
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_subject_list(request):
+    subjects = Subject.objects.all()
+    return render(request, 'upload/teacher/subject_list.html', {
+        'subjects': subjects
+    })
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_subject_create(request):
+    if request.method == 'POST':
+        form = SubjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "New subject created successfully!")
+            return redirect('upload:teacher_subject_list')
+    else:
+        form = SubjectForm()
+
+    return render(request, 'upload/teacher/subject_create.html', {
+        'form': form
+    })
+
+login_required
+@user_passes_test(is_teacher)
+def teacher_subject_delete(request, pk):
+    subject = get_object_or_404(Subject, pk=pk)
+    if request.method == 'POST':
+        subject.delete()
+        messages.success(request, "Subject deleted successfully!")
+        return redirect('upload:teacher_subject_list')
+
+    return render(request, 'upload/teacher/subject_delete.html', {
+        'subject': subject
+    })
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_assignment_list(request, pk):
+    subject = get_object_or_404(Subject, pk=pk)
+    assignments = subject.assignments.all()
+    return render(request, 'upload/teacher/assignment_list.html', {
+        'subject': subject,
+        'assignments': assignments
+    })
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_assignment_create(request, pk):
+    subject = get_object_or_404(Subject, pk=pk)
+    if request.method == 'POST':
+        form = AssignmentForm(request.POST)
+        if form.is_valid():
+            assignment = form.save(commit=False)
+            assignment.subject = subject
+            assignment.save()
+            messages.success(request, "Assignment created successfully!")
+            return redirect('upload:teacher_assignment_list', pk=subject.pk)
+    else:
+        form = AssignmentForm()
+
+    return render(request, 'upload/teacher/assignment_create.html', {
+        'form': form,
+        'subject': subject
+    })
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_assignment_delete(request, pk):
+    assignment = get_object_or_404(Assignment, pk=pk)
+    subject = assignment.subject
+    if request.method == 'POST':
+        assignment.delete()
+        messages.success(request, "Assignment deleted successfully!")
+        return redirect('upload:teacher_assignment_list', pk=subject.pk)
+
+    return render(request, 'upload/teacher/assignment_delete.html', {
+        'assignment': assignment
+    })
+
 
 def signup_view(request):
     if request.method == 'POST':
@@ -54,7 +136,13 @@ def custom_logout(request):
 @login_required
 def subject_list(request):
     subjects = Subject.objects.all()
-    return render(request, 'upload/subject_list.html', {'subjects': subjects})
+
+    is_teacher_flag = request.user.is_superuser or request.user.groups.filter(name='Teachers').exists()
+
+    return render(request, 'upload/subject_list.html', {
+        'subjects': subjects,
+        'is_teacher_flag': is_teacher_flag
+    })
 
 @login_required
 def subject_detail(request, subject_name):
@@ -72,11 +160,7 @@ def subject_detail(request, subject_name):
     })
 
 def run_tests(assignment, file_path):
-    # Define the path to the test file based on assignment
-    # Naming convention: {SubjectAbbreviation}{AssignmentNumber}_tests.py
-    subject_abbr = assignment.subject.name.upper()  # e.g., 'DSA'
-
-    # Extract the assignment number from assignment name, e.g., 'Homework 6' -> '6'
+    subject_abbr = assignment.subject.name.upper()
     match = re.search(r'Homework\s+(\d+)', assignment.name, re.IGNORECASE)
     if match:
         assignment_number = match.group(1)
@@ -90,96 +174,94 @@ def run_tests(assignment, file_path):
         return (0, 0, f"Test file '{test_file_name}' not found for this assignment.")
 
     try:
-        # Load the test module
         spec = importlib.util.spec_from_file_location("test_module", test_file_path)
         test_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(test_module)
 
-        # Load the student module
         spec_student = importlib.util.spec_from_file_location("student_code", file_path)
         student_module = importlib.util.module_from_spec(spec_student)
         spec_student.loader.exec_module(student_module)
 
-        # Run the tests
-        passed_tests, total_tests, message = test_module.run_tests(student_module)
-
-        return (passed_tests, total_tests, message)
-
+        passed_tests, total_tests, msg = test_module.run_tests(student_module)
+        return (passed_tests, total_tests, msg)
     except Exception as e:
         return (0, 0, f"Failed to run tests: {e}")
-
 
 @login_required
 def assignment_detail(request, subject_name, assignment_id):
     assignment = get_object_or_404(Assignment, subject__name=subject_name, id=assignment_id)
-    documents = assignment.documents.filter(user=request.user)
+
+    # Ограничение по количеству загрузок (если нужно) – не меняется
+    user_uploads_count = Document.objects.filter(assignment=assignment, user=request.user).count()
+    if user_uploads_count >= assignment.max_uploads:
+        messages.error(request, f"You have reached the upload limit ({assignment.max_uploads}). You cannot upload more files.")
+        return render(request, 'upload/assignment_detail.html', {
+            'assignment': assignment,
+            'latest_document': None,  # Лимит достигнут, не показываем загрузку
+            'form': None,
+            'is_teacher': is_teacher(request.user),
+        })
+
+    documents = Document.objects.filter(user=request.user, assignment=assignment).order_by('-uploaded_at')
+    latest_document = documents.first()
 
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            uploaded_files = request.FILES.getlist('document')  # Получаем список файлов
+            uploaded_files = request.FILES.getlist('document')
             if not uploaded_files:
                 messages.error(request, 'No files selected for upload.')
             else:
                 for uploaded_file in uploaded_files:
-                    # Создаём объект Document для каждого файла
-                    document = Document.objects.create(
+                    doc = Document.objects.create(
                         assignment=assignment,
                         user=request.user,
                         document=uploaded_file,
                         description=form.cleaned_data.get('description', '')
                     )
-
-                    # Запускаем тесты на загруженном коде
-                    file_path = document.document.path
+                    file_path = doc.document.path
                     passed_tests, total_tests, message = run_tests(assignment, file_path)
 
-                    # Вычисляем оценку
                     if total_tests > 0:
-                        grade = passed_tests  # Предполагается, что каждый тест стоит 1 балл
+                        fraction_passed = passed_tests / total_tests
+                        grade = int(fraction_passed * assignment.max_points)
                     else:
-                        grade = 0  # Тесты не найдены, оценка 0
+                        grade = 0
 
-                    # Обновляем объект Document с результатами тестов и оценкой
                     if total_tests == 0:
-                        # Тестовый файл не найден
-                        document.test_result = f"Failed: {message}"
+                        doc.test_result = f"Failed: {message}"
                         messages.error(request, f'File "{uploaded_file.name}" uploaded but tests could not be run: {message}')
                     elif passed_tests == total_tests:
-                        # Все тесты пройдены
-                        document.test_result = "Passed: All tests passed successfully."
+                        doc.test_result = "Passed: All tests passed successfully."
                         messages.success(request, f'File "{uploaded_file.name}" uploaded and passed all tests!')
                     else:
-                        # Некоторые тесты не пройдены
-                        document.test_result = f"Failed: {message}"
+                        doc.test_result = f"Failed: {message}"
                         messages.error(request, f'File "{uploaded_file.name}" uploaded but failed some tests: {message}')
 
-                    document.grade = grade
-                    document.save()
+                    doc.grade = grade
+                    doc.save()
 
-                return redirect('upload:assignment_detail', subject_name=subject_name, assignment_id=assignment_id)  # Добавляем неймспейс
+                return redirect('upload:assignment_detail', subject_name=subject_name, assignment_id=assignment_id)
         else:
             messages.error(request, 'There was an error uploading your file.')
     else:
         form = DocumentForm()
 
-    # Определяем, является ли пользователь учителем
-    is_teacher_flag = is_teacher(request.user)
-
     return render(request, 'upload/assignment_detail.html', {
         'assignment': assignment,
-        'documents': documents,
+        'latest_document': latest_document,
         'form': form,
-        'is_teacher': is_teacher_flag,  # Передаём 'is_teacher' в шаблон
+        'is_teacher': is_teacher(request.user),
     })
+
 
 
 @login_required
 def delete_document(request, pk):
     document = get_object_or_404(Document, pk=pk, user=request.user)
     if request.method == 'POST':
-        document.document.delete()  # Delete file from disk
-        document.delete()           # Delete record from database
+        document.document.delete()
+        document.delete()
         messages.success(request, "File successfully deleted.")
         return redirect('upload:assignment_detail', subject_name=document.assignment.subject.name, assignment_id=document.assignment.id)  # Добавляем неймспейс
     return render(request, 'upload/delete_document.html', {'document': document})
@@ -219,4 +301,58 @@ def upload_test_file(request, subject_abbr, assignment_number):
         'subject_abbr': subject_abbr,
         'assignment_number': assignment_number,
         'assignment': assignment,
+    })
+
+
+@login_required
+def document_detail(request, pk):
+    document = get_object_or_404(Document, pk=pk, user=request.user)
+    code_content = None
+    try:
+        with open(document.document.path, 'r') as f:
+            code_content = f.read()
+    except Exception as e:
+        code_content = f"Cannot read file: {e}"
+
+    return render(request, 'upload/document_detail.html', {
+        'document': document,
+        'code_content': code_content,
+    })
+
+
+@login_required
+def grades_overview(request):
+    user = request.user
+    subjects = Subject.objects.all().order_by('name')
+    subject_data = []
+
+    for subj in subjects:
+        assignment_rows = []
+        total_subject_max = 0
+        total_subject_user = 0
+        for asg in subj.assignments.all().order_by('deadline'):
+            docs = asg.documents.filter(user=user)
+            best_doc = docs.order_by('-grade').first()
+            user_grade = 0
+            if best_doc:
+                user_grade = best_doc.grade
+
+            assignment_rows.append({
+                'assignment': asg,
+                'deadline': asg.deadline,
+                'max_points': asg.max_points,
+                'user_grade': user_grade,
+            })
+            total_subject_max += asg.max_points
+            total_subject_user += user_grade
+
+        subject_data.append({
+            'subject': subj,
+            'assignments': assignment_rows,
+            'subject_max': total_subject_max,
+            'subject_user': total_subject_user,
+        })
+
+    return render(request, 'upload/grades_overview.html', {
+        'subject_data': subject_data,
     })
