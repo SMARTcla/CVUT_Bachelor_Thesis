@@ -28,5 +28,6 @@ urlpatterns = [
     path('teacher/subjects/<int:pk>/assignments/', views.teacher_assignment_list, name='teacher_assignment_list'),
     path('teacher/subjects/<int:pk>/assignments/create/', views.teacher_assignment_create, name='teacher_assignment_create'),
     path('teacher/assignments/delete/<int:pk>/', views.teacher_assignment_delete, name='teacher_assignment_delete'),
-
+    path('teacher/assignments/<int:pk>/submissions/', views.teacher_assignment_submissions, name='teacher_assignment_submissions'),
+    path('teacher/assignments/<int:assignment_id>/plagiarism/<str:method>/', views.teacher_plagiarism_check, name='teacher_plagiarism_check'),
 ]

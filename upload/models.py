@@ -8,9 +8,12 @@ from django.core.exceptions import ValidationError
 import markdown
 from django.utils.html import mark_safe
 
-def user_directory_path(instance, filename):
-    return f'user_{instance.user.id}/{filename}'
-
+def document_upload_path(instance, filename):
+    username = instance.user.username
+    subject_name = instance.assignment.subject.name
+    assignment_no = instance.assignment.number
+    return f"{username}/{subject_name}/{assignment_no}/{filename}"
+    
 def validate_file_extension(value):
     ext = os.path.splitext(value.name)[1]
     valid_extensions = ['.py']
@@ -43,7 +46,10 @@ class Document(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='documents')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.CharField(max_length=255, blank=True)
-    document = models.FileField(upload_to=user_directory_path, validators=[validate_file_extension])
+    document = models.FileField(
+        upload_to=document_upload_path,
+        validators=[validate_file_extension]
+    )
     uploaded_at = models.DateTimeField(auto_now_add=True)
     test_result = models.CharField(max_length=255, blank=True, null=True)
     grade = models.PositiveIntegerField(default=0)
