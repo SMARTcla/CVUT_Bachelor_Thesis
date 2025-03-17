@@ -1,41 +1,56 @@
-<!-- upload/templates/upload/assignment_detail.html -->
-
 {% extends 'upload/base.html' %}
 {% load crispy_forms_tags %}
-{% load dict_extras %}
-
 {% block content %}
+
+<style>
+.test-result-prewrap {
+    white-space: pre-wrap;
+    line-height: 1.3;
+    display: inline-block;
+}
+</style>
+
 <div class="content-container">
-    <a href="{% url 'upload:subject_detail' subject_name=assignment.subject.name %}" class="btn btn-secondary mb-4">
+    <a href="{% url 'upload:subject_detail' subject_name=assignment.subject.name %}"
+       class="btn btn-secondary mb-4">
         &larr; Back
     </a>
+
     <h2>{{ assignment.name }}</h2>
     <p><strong>Deadline:</strong> {{ assignment.deadline }}</p>
     <p><strong>Max Points:</strong> {{ assignment.max_points }}</p>
     <p><strong>Max Uploads:</strong> {{ assignment.max_uploads }}</p>
-    <p>{{ assignment.get_description_markdown }}</p>
+    <div>
+        {{ assignment.get_description_markdown|safe }}
+    </div>
+
     <hr>
     <h3>Latest Upload</h3>
+
     {% if latest_document %}
-        <!-- Отображаем дату/время последней загрузки как ссылку на страницу с кодом -->
         <p>
             <strong>Uploaded at:</strong>
             <a href="{% url 'upload:document_detail' pk=latest_document.pk %}">
                 {{ latest_document.uploaded_at|date:"d.m.Y H:i" }}
             </a>
-
-            <!-- Кнопка "Download" -->
             <a href="{{ latest_document.document.url }}" class="btn btn-sm btn-primary" download>
                 Download
             </a>
         </p>
 
-        <!-- Если есть результат теста, покажем -->
         {% if latest_document.test_result %}
             <p>
-                <span class="badge {% if 'Passed' in latest_document.test_result %}bg-success{% else %}bg-danger{% endif %}">
+                <span 
+                  class="badge 
+                         {% if 'Passed' in latest_document.test_result %}
+                             bg-success
+                         {% else %}
+                             bg-danger
+                         {% endif %}
+                         test-result-prewrap">
                     {{ latest_document.test_result }}
                 </span>
+
                 <span class="badge bg-info">
                     Grade: {{ latest_document.grade }} / {{ assignment.max_points }}
                 </span>
@@ -44,6 +59,19 @@
 
     {% else %}
         <p>No files have been uploaded yet.</p>
+    {% endif %}
+
+    {% if user_uploads_count < assignment.max_uploads %}
+        <p>
+            <a href="{% url 'upload:assignment_code_editor' subject_name=assignment.subject.name assignment_id=assignment.id %}"
+               class="btn btn-warning">
+                Open in Code Editor
+            </a>
+        </p>
+    {% else %}
+        <p class="text-danger">
+            You cannot open the code editor (limit reached).
+        </p>
     {% endif %}
 
     {% if is_teacher %}

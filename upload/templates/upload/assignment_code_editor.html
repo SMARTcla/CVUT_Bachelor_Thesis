@@ -1,0 +1,46 @@
+<!-- upload/templates/upload/assignment_code_editor.html -->
+{% extends 'upload/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-container">
+    <h2>Online Code Editor for {{ assignment.name }}</h2>
+
+    <p><strong>Max Points:</strong> {{ assignment.max_points }}</p>
+    <p><strong>Max Uploads:</strong> {{ assignment.max_uploads }}</p>
+    <hr>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <form method="POST" id="code_form">
+        {% csrf_token %}
+        <div id="editor" style="height: 400px; width: 100%;"></div>
+        <textarea id="editor_code" name="editor_code" hidden></textarea>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Run Tests</button>
+            <a href="{% url 'upload:assignment_detail' subject_name=assignment.subject.name assignment_id=assignment.id %}"
+               class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js" crossorigin="anonymous"></script>
+
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.session.setMode("ace/mode/python");
+    editor.session.setValue(`{{ initial_code|escapejs }}`, -1);
+    var myForm = document.getElementById("code_form");
+    myForm.addEventListener("submit", function(e){
+        var code = editor.getValue();
+        console.log("Submitting code:", code);
+        document.getElementById("editor_code").value = code;
+    });
+</script>
+{% endblock %}

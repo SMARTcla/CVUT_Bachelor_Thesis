@@ -3,12 +3,14 @@
 import importlib.util
 import os
 import re 
+import random
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import TestFileForm, DocumentForm, SignUpForm, SubjectForm, AssignmentForm
 from .models import Document, Subject, Assignment
+from django.core.files.base import ContentFile
 from django.contrib import messages
 
 def is_teacher(user):
@@ -250,10 +252,10 @@ def assignment_detail(request, subject_name, assignment_id):
     return render(request, 'upload/assignment_detail.html', {
         'assignment': assignment,
         'latest_document': latest_document,
+        'user_uploads_count': user_uploads_count,
         'form': form,
         'is_teacher': is_teacher(request.user),
     })
-
 
 
 @login_required
@@ -312,7 +314,7 @@ def document_detail(request, pk):
         with open(document.document.path, 'r') as f:
             code_content = f.read()
     except Exception as e:
-        code_content = f"Cannot read file: {e}"
+        code_content = f"No code found: {e}"
 
     return render(request, 'upload/document_detail.html', {
         'document': document,
@@ -355,4 +357,76 @@ def grades_overview(request):
 
     return render(request, 'upload/grades_overview.html', {
         'subject_data': subject_data,
+    })
+
+@login_required
+def assignment_code_editor(request, subject_name, assignment_id):
+    assignment = get_object_or_404(Assignment, subject__name=subject_name, id=assignment_id)
+
+    # Проверка лимита загрузок
+    documents = Document.objects.filter(assignment=assignment, user=request.user).order_by('-uploaded_at')
+    user_uploads_count = documents.count()
+    if user_uploads_count >= assignment.max_uploads:
+        messages.error(request, "Upload limit reached. Cannot open code editor.")
+        return redirect('upload:assignment_detail', subject_name=subject_name, assignment_id=assignment_id)
+
+    # Берём код последнего документа (если был), чтобы показать в редакторе
+    latest_doc = documents.first()
+    initial_code = ""
+    if latest_doc:
+        try:
+            with open(latest_doc.document.path, 'r') as f:
+                initial_code = f.read().rstrip('\n')
+        except Exception as e:
+            initial_code = f"# Cannot read last file: {e}"
+
+    if request.method == "POST":
+        code_from_editor = request.POST.get("editor_code", "")
+
+        # 1) Генерируем имя файла, напр. calculate_XXXX.py
+        random_part = str(random.randrange(1000,9999))
+        filename = f"calculate_{random_part}.py"
+
+        # 2) Создаём ContentFile из code_from_editor
+        content_file = ContentFile(code_from_editor.encode('utf-8'), name=filename)
+
+        # 3) Создаём Document
+        doc = Document.objects.create(
+            assignment=assignment,
+            user=request.user,
+            document=content_file,  # Django сам сохранит как media/user_<id>/calculate_xxxx.py
+        )
+
+        # 4) Запускаем тесты
+        file_path = doc.document.path
+        passed_tests, total_tests, message = run_tests(assignment, file_path)
+
+        # 5) Считаем grade (пример)
+        if total_tests > 0:
+            fraction_passed = passed_tests / total_tests
+            grade = int(fraction_passed * assignment.max_points)
+        else:
+            grade = 0
+
+        # 6) Ставим test_result
+        if total_tests == 0:
+            doc.test_result = f"Failed: {message}"
+            messages.error(request, f'Your code was uploaded but tests could not be run: {message}')
+        elif passed_tests == total_tests:
+            doc.test_result = "Passed: All tests passed successfully."
+            messages.success(request, 'Your code was uploaded and passed all tests!')
+        else:
+            doc.test_result = f"Failed: {message}"
+            messages.error(request, f'Your code was uploaded but failed some tests: {message}')
+
+        doc.grade = grade
+        doc.save()
+
+        # 7) Возвращаемся на страницу assignment_detail
+        return redirect('upload:assignment_detail', subject_name=subject_name, assignment_id=assignment_id)
+
+    # Если GET, просто показываем пустую форму + initial_code
+    return render(request, 'upload/assignment_code_editor.html', {
+        'assignment': assignment,
+        'initial_code': initial_code,
     })

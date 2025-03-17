@@ -30,8 +30,8 @@ class Assignment(models.Model):
     description = models.TextField()
     deadline = models.DateField()
     number = models.PositiveIntegerField()
-    max_points = models.PositiveIntegerField(default=10, help_text="Максимальное количество баллов за это задание.")
-    max_uploads = models.PositiveIntegerField(default=20, help_text="Максимальное количество загрузок для студента.")
+    max_points = models.PositiveIntegerField(default=10, help_text="Maximum points for this assignment.")
+    max_uploads = models.PositiveIntegerField(default=20, help_text="Maximum number of downloads for a student.")
 
     def __str__(self):
         return self.name

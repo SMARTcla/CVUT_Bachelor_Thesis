@@ -7,8 +7,7 @@ def run_tests(student_module):
     """
     try:
         if not hasattr(student_module, 'len_arr'):
-            return False, "Function 'len_arr' not found."
-
+            return (0, 10, "Function 'len_arr' not found.")
         test_cases = [
             {'arr': [1, 2, 3], 'expected': 3},
             {'arr': [], 'expected': 0},
@@ -21,22 +20,19 @@ def run_tests(student_module):
             {'arr': ['a', 'b'], 'expected': 2},
             {'arr': [0, 0, 0], 'expected': 3},
         ]
-
         passed_tests = 0
         failed_tests = []
         for i, test in enumerate(test_cases, start=1):
-            a = test['a']
-            b = test['b']
+            a = test['arr']
             expected = test['expected']
             try:
-                result = student_module.pow_cal(a, b)
+                result = student_module.len_arr(a)
                 if result == expected:
                     passed_tests += 1
                 else:
-                    failed_tests.append(f"Test {i}: pow_cal({a}, {b}) returned {result}, expected {expected}.")
+                    failed_tests.append(f"Test {i}: len_arr({a}) returned {result}, expected {expected}.")
             except Exception as e:
                 failed_tests.append(f"Test {i}: Raised an exception: {e}.")
-
         total_tests = len(test_cases)
         if passed_tests == total_tests:
             return (passed_tests, total_tests, "All tests passed successfully.")
