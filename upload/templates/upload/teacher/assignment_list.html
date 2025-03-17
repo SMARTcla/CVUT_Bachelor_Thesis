@@ -22,6 +22,9 @@
                 <td>{{ assignment.deadline }}</td>
                 <td>{{ assignment.number }}</td>
                 <td>
+                    <a href="{% url 'upload:teacher_assignment_submissions' pk=assignment.pk %}" class="btn btn-sm btn-info">
+                        View Submissions
+                    </a>
                     <a href="{% url 'upload:teacher_assignment_delete' pk=assignment.pk %}" class="btn btn-sm btn-danger">
                         Delete
                     </a>

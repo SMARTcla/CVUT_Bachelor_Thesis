@@ -1,0 +1,60 @@
+{% extends 'upload/base.html' %}
+{% load static %}
+{% block content %}
+<div class="content-container">
+    <h2>Submissions for {{ assignment.name }}</h2>
+    <p><strong>Deadline:</strong> {{ assignment.deadline }}</p>
+    <p><strong>Max Points:</strong> {{ assignment.max_points }}</p>
+    <p><strong>Max Uploads:</strong> {{ assignment.max_uploads }}</p>
+    <hr>
+    {% if submissions %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Student Username</th>
+                    <th>Submitted Code</th>
+                    <th>Grade</th>
+                    <th>Uploaded At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                    <tr>
+                        <td>{{ submission.user.username }}</td>
+                        <td>
+                            <a href="{% url 'upload:document_detail' pk=submission.pk %}">View Code</a>
+                        </td>
+                        <td>{{ submission.grade }} / {{ assignment.max_points }}</td>
+                        <td>{{ submission.uploaded_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No submissions for this assignment yet.</p>
+    {% endif %}
+    <div class="dropdown mb-3">
+        Run Plagiarism Check
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a href="{% url 'upload:teacher_plagiarism_check' assignment_id=assignment.pk method='difflib' %}" class="btn btn-info">
+              Difflib
+            </a>
+            <a href="{% url 'upload:teacher_plagiarism_check' assignment_id=assignment.pk method='tokenize' %}" class="btn btn-info">
+              Tokenize
+            </a>
+            <a href="{% url 'upload:teacher_plagiarism_check' assignment_id=assignment.pk method='ast' %}" class="btn btn-info">
+              AST
+            </a>
+            <a href="{% url 'upload:teacher_plagiarism_check' assignment_id=assignment.pk method='ngrams' %}" class="btn btn-info">
+              n-Grams
+            </a>
+            <a href="{% url 'upload:teacher_plagiarism_check' assignment_id=assignment.pk method='winnowing' %}" class="btn btn-info">
+              Winnowing
+            </a>
+          </div>
+    </div>      
+    <a href="{% url 'upload:teacher_assignment_list' pk=assignment.subject.pk %}" class="btn btn-secondary mt-3">
+        &larr; Back to Assignment List
+    </a>
+</div>
+{% endblock %}

@@ -38,7 +38,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('description', models.CharField(blank=True, max_length=255)),
-                ('document', models.FileField(upload_to=upload.models.user_directory_path, validators=[upload.models.validate_file_extension])),
+                ('document', models.FileField(upload_to=upload.models.document_upload_path, validators=[upload.models.validate_file_extension])),
+
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
                 ('test_result', models.CharField(blank=True, max_length=255, null=True)),
                 ('grade', models.PositiveIntegerField(default=0)),

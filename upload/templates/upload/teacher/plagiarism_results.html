@@ -1,0 +1,49 @@
+{% extends 'upload/base.html' %}
+{% block content %}
+<div class="content-container">
+    <h2>Plagiarism Check Results for {{ assignment.name }}</h2>
+    <p>Method: {{ method }}</p>
+
+    <h3>Pairwise Comparisons</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student 1</th>
+                <th>Student 2</th>
+                <th>Similarity (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u1, u2, score in pairwise_results %}
+            <tr>
+                <td>{{ u1 }}</td>
+                <td>{{ u2 }}</td>
+                <td>{{ score|floatformat:2 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Maximum Similarity by Student</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Maximum Similarity (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user, score in max_scores.items %}
+            <tr>
+                <td>{{ user }}</td>
+                <td>{{ score|floatformat:2 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'upload:teacher_assignment_submissions' pk=assignment.pk %}" class="btn btn-secondary mt-3">
+        &larr; Back to Assignment Submissions
+    </a>
+</div>
+{% endblock %}

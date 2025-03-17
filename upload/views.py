@@ -12,6 +12,13 @@ from .forms import TestFileForm, DocumentForm, SignUpForm, SubjectForm, Assignme
 from .models import Document, Subject, Assignment
 from django.core.files.base import ContentFile
 from django.contrib import messages
+from .antiplagiarism import (
+    plagiarism_score_difflib,
+    plagiarism_score_tokenize,
+    plagiarism_score_ast,
+    plagiarism_score_ngrams,
+    plagiarism_score_winnowing
+)
 
 def is_teacher(user):
     return user.is_superuser or user.groups.filter(name='Teachers').exists()
@@ -308,18 +315,21 @@ def upload_test_file(request, subject_abbr, assignment_number):
 
 @login_required
 def document_detail(request, pk):
-    document = get_object_or_404(Document, pk=pk, user=request.user)
-    code_content = None
-    try:
-        with open(document.document.path, 'r') as f:
-            code_content = f.read()
-    except Exception as e:
-        code_content = f"No code found: {e}"
-
-    return render(request, 'upload/document_detail.html', {
-        'document': document,
-        'code_content': code_content,
-    })
+    document = get_object_or_404(Document, pk=pk)
+    if document.user == request.user or is_teacher(request.user):
+        try:
+            with open(document.document.path, 'r') as f:
+                code_content = f.read()
+        except Exception as e:
+            code_content = f"No code found: {e}"
+        
+        return render(request, 'upload/document_detail.html', {
+            'document': document,
+            'code_content': code_content,
+        })
+    else:
+        from django.http import Http404
+        raise Http404("No Document matches the given query.")
 
 
 @login_required
@@ -429,4 +439,77 @@ def assignment_code_editor(request, subject_name, assignment_id):
     return render(request, 'upload/assignment_code_editor.html', {
         'assignment': assignment,
         'initial_code': initial_code,
+    })
+
+
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_assignment_submissions(request, pk):
+    """
+    Displays a list of all submissions for a given assignment.
+    """
+    assignment = get_object_or_404(Assignment, pk=pk)
+    submissions = assignment.documents.all().order_by('-uploaded_at')
+    
+    return render(request, 'upload/teacher/assignment_submissions.html', {
+        'assignment': assignment,
+        'submissions': submissions,
+    })
+
+
+@login_required
+@user_passes_test(is_teacher)
+def teacher_plagiarism_check(request, assignment_id, method):
+    assignment = get_object_or_404(Assignment, pk=assignment_id)
+    
+    docs = Document.objects.filter(assignment=assignment).order_by('-uploaded_at')
+    submissions = {}
+    for doc in docs:
+        if doc.user.username not in submissions:
+            submissions[doc.user.username] = doc
+
+    usernames = list(submissions.keys())
+    n = len(usernames)
+    pairwise_results = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            user1 = usernames[i]
+            user2 = usernames[j]
+            try:
+                with open(submissions[user1].document.path, 'r') as f:
+                    code1 = f.read()
+            except Exception:
+                code1 = ""
+            try:
+                with open(submissions[user2].document.path, 'r') as f:
+                    code2 = f.read()
+            except Exception:
+                code2 = ""
+            score = 0
+            if method == 'difflib':
+                score = plagiarism_score_difflib(code1, code2)
+            elif method == 'tokenize':
+                score = plagiarism_score_tokenize(code1, code2)
+            elif method == 'ast':
+                score = plagiarism_score_ast(code1, code2)
+            elif method == 'ngrams':
+                score = plagiarism_score_ngrams(code1, code2)
+            elif method == 'winnowing':
+                score = plagiarism_score_winnowing(code1, code2)
+            pairwise_results.append((user1, user2, score))
+    max_scores = {}
+    for user in usernames:
+        max_score = 0
+        for (u1, u2, score) in pairwise_results:
+            if u1 == user or u2 == user:
+                if score > max_score:
+                    max_score = score
+        max_scores[user] = max_score
+
+    return render(request, 'upload/teacher/plagiarism_results.html', {
+        'assignment': assignment,
+        'pairwise_results': pairwise_results,
+        'max_scores': max_scores,
+        'method': method,
     })
