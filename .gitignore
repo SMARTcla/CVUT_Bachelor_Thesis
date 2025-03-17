@@ -12,7 +12,6 @@ Thumbs.db
 # python venv
 .venv/*
 venv/*
-.venv/*
 *.cfg
 
 # media files
@@ -20,3 +19,6 @@ media/
 
 # Database files
 *.sqlite3
+
+# .upload/__pycache__/*
+# .mkononenko/__pycache__/*

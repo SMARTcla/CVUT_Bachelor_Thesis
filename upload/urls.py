@@ -15,6 +15,7 @@ urlpatterns = [
     path('upload-test/<str:subject_abbr>/<int:assignment_number>/', views.upload_test_file, name='upload_test_file'),
     path('document/<int:pk>/', views.document_detail, name='document_detail'),
     path('grades-overview/', views.grades_overview, name='grades_overview'),
+    path('<str:subject_name>/<int:assignment_id>/code-editor/', views.assignment_code_editor, name='assignment_code_editor'),
     path('', views.subject_list, name='subject_list'),
     path('<str:subject_name>/<int:assignment_id>/', views.assignment_detail, name='assignment_detail'),
     path('<str:subject_name>/', views.subject_detail, name='subject_detail'),

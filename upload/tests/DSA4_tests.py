@@ -11,29 +11,28 @@ def run_tests(student_module):
 
         test_cases = [
             {'s': 'hello', 'expected': 3},
-            {'s': 'Django', 'expected': 3},
+            {'s': 'Django', 'expected': 4},
             {'s': 'AEIOU', 'expected': 0},
             {'s': 'bcdfghjklmnpqrstvwxyz', 'expected': 21},
-            {'s': 'Python Programming', 'expected': 7},
+            {'s': 'Python Programming', 'expected': 13},
             {'s': '', 'expected': 0},
             {'s': '12345', 'expected': 0},
-            {'s': 'Consonants!', 'expected': 6},
-            {'s': 'This is a test string.', 'expected': 6},
-            {'s': 'D3v3l0p3r', 'expected': 3},
+            {'s': 'Consonants!', 'expected': 7},
+            {'s': 'This is a test string.', 'expected': 12},
+            {'s': 'D3v3l0p3r', 'expected': 5},
         ]
 
         passed_tests = 0
         failed_tests = []
         for i, test in enumerate(test_cases, start=1):
-            a = test['a']
-            b = test['b']
+            a = test['s']
             expected = test['expected']
             try:
-                result = student_module.pow_cal(a, b)
+                result = student_module.count_consonants(a)
                 if result == expected:
                     passed_tests += 1
                 else:
-                    failed_tests.append(f"Test {i}: pow_cal({a}, {b}) returned {result}, expected {expected}.")
+                    failed_tests.append(f"Test {i}: count_consonants({a}) returned {result}, expected {expected}.")
             except Exception as e:
                 failed_tests.append(f"Test {i}: Raised an exception: {e}.")
 
