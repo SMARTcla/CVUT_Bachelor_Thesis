@@ -27,32 +27,38 @@ This is a Django-based code evaluation and assignment management system. It prov
 
 ## Installation
 
-# 1. Clone the repository:
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+1. **Clone the repository:**
+```bash
+git clone https://github.com/SMARTcla/CVUT_Bachelor_Thesis/
+cd CVUT_Bachelor_Thesis
+```
 
-# 2. Set up a virtual environment (optional but recommended):
+2. **Set up a virtual environment (optional but recommended):**
+```bash
 python3 -m venv venv
 source venv/bin/activate
+```
 
-# 3. Install dependencies:
+3. **Install dependencies:**
+```bash
 pip install -r requirements.txt
+```
 
-# 4. Configure Django settings:
-# Rename example_settings.py to settings.py (if provided) or update settings.py with your database configuration and other settings.
-
-# 5. Apply migrations:
+4. **Apply migrations:**
+```bash
 python manage.py makemigrations
 python manage.py migrate
+```
 
-# 6. Create a superuser (teacher or admin) if needed:
-python manage.py createsuperuser
-
-# 7. Run the development server:
+5. **Run the development server:**
+```bash
 python manage.py runserver
+```
 
-# 8. Access the application:
-# Open http://127.0.0.1:8000/ in your web browser.
+6. **Access the application:**
+```bash
+Open http://127.0.0.1:8000/ in your web browser.
+```
 
 ## Configuration
 
