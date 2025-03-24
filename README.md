@@ -66,20 +66,20 @@ Open http://127.0.0.1:8000/ in your web browser.
 - **Database Settings**: Update `DATABASES` in `settings.py` to connect to your chosen database (e.g., PostgreSQL, MySQL, SQLite).
 - **Antiplagiarism Parameters**: Adjust thresholds or settings related to plagiarism detection (e.g., similarity cutoffs for difflib/tokenize/AST/n-grams/Winnowing).
 
-### Example `.env`
+**Example `.env`**
 ```bash
 DEBUG=True
 SECRET_KEY="mkononenko-secret"
 DATABASE_URL="postgres://user:password@localhost:5432/upload"
 ```
 
-Development Server:
+**Development Server:**
 
 ```bash
 python manage.py runserver
 ```
 
-## Docker
+**Docker**
 
 Build the Docker image:
 
@@ -93,9 +93,7 @@ Run the container:
 docker run -p 8000:8000 CVUT_Bachelor_Thesis
 ```
 
-## Production Deployment
-
-# Use your preferred deployment method
+**Use your preferred deployment method**
 
 Ensure the .env file or environment variables are properly set on your production server.
 
@@ -117,7 +115,7 @@ Usage
 
 ## Testing
 
-# Unit Tests:
+### Unit Tests:
 
 ```bash
 python manage.py test
@@ -125,7 +123,7 @@ python manage.py test
 
 This command runs all Django unit tests, including any tests for plagiarism modules.
 
-# Integration Tests:
+### Integration Tests:
 
 TO DO
 
