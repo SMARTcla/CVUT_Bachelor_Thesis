@@ -2,7 +2,7 @@ import os
 import django
 from datetime import date, timedelta
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mkononenko.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'softaware_app.settings')
 django.setup()
 
 from upload.models import Subject, Assignment
