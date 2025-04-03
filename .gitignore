@@ -21,4 +21,4 @@ media/
 *.sqlite3
 
 # .upload/__pycache__/*
-# .mkononenko/__pycache__/*
+# .softaware_app/__pycache__/*
