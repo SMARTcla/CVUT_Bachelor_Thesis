@@ -1,2 +1,2 @@
-def calculate(a, b):
-    return a + b
+def pow_cal(a, b):
+    return a ** b
