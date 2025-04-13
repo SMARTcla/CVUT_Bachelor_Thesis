@@ -1,5 +1,3 @@
-# upload/tests/DSA1_tests.py
-
 def run_tests(student_module):
     """
     Executes the tests for the calculate(a, b) function.

@@ -112,7 +112,7 @@ def signup_view(request):
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful!")
-            return redirect('upload:subject_list')  # Добавляем неймспейс
+            return redirect('upload:subject_list')
         else:
             messages.error(request, "Registration failed. Please check your data.")
     else:
@@ -373,14 +373,12 @@ def grades_overview(request):
 def assignment_code_editor(request, subject_name, assignment_id):
     assignment = get_object_or_404(Assignment, subject__name=subject_name, id=assignment_id)
 
-    # Проверка лимита загрузок
     documents = Document.objects.filter(assignment=assignment, user=request.user).order_by('-uploaded_at')
     user_uploads_count = documents.count()
     if user_uploads_count >= assignment.max_uploads:
         messages.error(request, "Upload limit reached. Cannot open code editor.")
         return redirect('upload:assignment_detail', subject_name=subject_name, assignment_id=assignment_id)
 
-    # Берём код последнего документа (если был), чтобы показать в редакторе
     latest_doc = documents.first()
     initial_code = ""
     if latest_doc:
@@ -393,32 +391,26 @@ def assignment_code_editor(request, subject_name, assignment_id):
     if request.method == "POST":
         code_from_editor = request.POST.get("editor_code", "")
 
-        # 1) Генерируем имя файла, напр. calculate_XXXX.py
         random_part = str(random.randrange(1000,9999))
         filename = f"calculate_{random_part}.py"
 
-        # 2) Создаём ContentFile из code_from_editor
         content_file = ContentFile(code_from_editor.encode('utf-8'), name=filename)
 
-        # 3) Создаём Document
         doc = Document.objects.create(
             assignment=assignment,
             user=request.user,
-            document=content_file,  # Django сам сохранит как media/user_<id>/calculate_xxxx.py
+            document=content_file,
         )
 
-        # 4) Запускаем тесты
         file_path = doc.document.path
         passed_tests, total_tests, message = run_tests(assignment, file_path)
 
-        # 5) Считаем grade (пример)
         if total_tests > 0:
             fraction_passed = passed_tests / total_tests
             grade = int(fraction_passed * assignment.max_points)
         else:
             grade = 0
 
-        # 6) Ставим test_result
         if total_tests == 0:
             doc.test_result = f"Failed: {message}"
             messages.error(request, f'Your code was uploaded but tests could not be run: {message}')
@@ -432,10 +424,8 @@ def assignment_code_editor(request, subject_name, assignment_id):
         doc.grade = grade
         doc.save()
 
-        # 7) Возвращаемся на страницу assignment_detail
         return redirect('upload:assignment_detail', subject_name=subject_name, assignment_id=assignment_id)
 
-    # Если GET, просто показываем пустую форму + initial_code
     return render(request, 'upload/assignment_code_editor.html', {
         'assignment': assignment,
         'initial_code': initial_code,
