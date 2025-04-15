@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  filestorage:
+    build: .
+    container_name: filestorage
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /media
+    ports:
+      - "9000:9000"
+    volumes:
+      - media_data:/media
+    networks:
+      - app-network
+
+volumes:
+  media_data:
+    external: true
+
+networks:
+  app-network:
+    external: true

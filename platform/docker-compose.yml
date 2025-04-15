@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web
+    command: gunicorn software_app.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - media_data:/app/media
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      POSTGRES_USER: kononmi1
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true
+
+volumes:
+  media_data:
+    external: true

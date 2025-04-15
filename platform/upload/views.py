@@ -4,6 +4,7 @@ import importlib.util
 import os
 import re 
 import random
+import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -12,13 +13,6 @@ from .forms import TestFileForm, DocumentForm, SignUpForm, SubjectForm, Assignme
 from .models import Document, Subject, Assignment
 from django.core.files.base import ContentFile
 from django.contrib import messages
-from .antiplagiarism import (
-    plagiarism_score_difflib,
-    plagiarism_score_tokenize,
-    plagiarism_score_ast,
-    plagiarism_score_ngrams,
-    plagiarism_score_winnowing
-)
 
 def is_teacher(user):
     return user.is_superuser or user.groups.filter(name='Teachers').exists()
@@ -175,38 +169,38 @@ def run_tests(assignment, file_path):
         assignment_number = match.group(1)
     else:
         return (0, 0, "Cannot determine assignment number from the assignment name.")
-
+    
     test_file_name = f"{subject_abbr}{assignment_number}_tests.py"
     test_file_path = os.path.join(os.path.dirname(__file__), 'tests', test_file_name)
 
     if not os.path.exists(test_file_path):
         return (0, 0, f"Test file '{test_file_name}' not found for this assignment.")
-
+    coderunner_url = "http://test-runner:8003/run-tests"
+    params = {
+        "file_path": file_path
+    }
     try:
-        spec = importlib.util.spec_from_file_location("test_module", test_file_path)
-        test_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(test_module)
-
-        spec_student = importlib.util.spec_from_file_location("student_code", file_path)
-        student_module = importlib.util.module_from_spec(spec_student)
-        spec_student.loader.exec_module(student_module)
-
-        passed_tests, total_tests, msg = test_module.run_tests(student_module)
-        return (passed_tests, total_tests, msg)
+        response = requests.get(coderunner_url, params=params)
+        if response.status_code != 200:
+            return (0, 0, f"Test runner returned error: {response.status_code}")
+        data = response.json()
+        passed_tests = data.get("passed_tests", 0)
+        total_tests = data.get("total_tests", 0)
+        message = data.get("message", "")
+        return (passed_tests, total_tests, message)
     except Exception as e:
-        return (0, 0, f"Failed to run tests: {e}")
+        return (0, 0, f"Exception during contacting test runner: {str(e)}")
 
 @login_required
 def assignment_detail(request, subject_name, assignment_id):
     assignment = get_object_or_404(Assignment, subject__name=subject_name, id=assignment_id)
 
-    # Ограничение по количеству загрузок (если нужно) – не меняется
     user_uploads_count = Document.objects.filter(assignment=assignment, user=request.user).count()
     if user_uploads_count >= assignment.max_uploads:
         messages.error(request, f"You have reached the upload limit ({assignment.max_uploads}). You cannot upload more files.")
         return render(request, 'upload/assignment_detail.html', {
             'assignment': assignment,
-            'latest_document': None,  # Лимит достигнут, не показываем загрузку
+            'latest_document': None,
             'form': None,
             'is_teacher': is_teacher(request.user),
         })
@@ -450,7 +444,7 @@ def teacher_assignment_submissions(request, pk):
 
 @login_required
 @user_passes_test(is_teacher)
-def teacher_plagiarism_check(request, assignment_id, method):
+def teacher_plagiarism_check(request, assignment_id, method):    
     assignment = get_object_or_404(Assignment, pk=assignment_id)
     
     docs = Document.objects.filter(assignment=assignment).order_by('-uploaded_at')
@@ -476,18 +470,14 @@ def teacher_plagiarism_check(request, assignment_id, method):
                     code2 = f.read()
             except Exception:
                 code2 = ""
-            score = 0
-            if method == 'difflib':
-                score = plagiarism_score_difflib(code1, code2)
-            elif method == 'tokenize':
-                score = plagiarism_score_tokenize(code1, code2)
-            elif method == 'ast':
-                score = plagiarism_score_ast(code1, code2)
-            elif method == 'ngrams':
-                score = plagiarism_score_ngrams(code1, code2)
-            elif method == 'winnowing':
-                score = plagiarism_score_winnowing(code1, code2)
-            pairwise_results.append((user1, user2, score))
+            base_url = "http://antiplagiat:8004/check-plagiarism"
+            params = {
+                "file1": submissions[user1].document.path,
+                "file2": submissions[user2].document.path,
+                "method": method
+            }
+            response = requests.get(base_url, params=params)
+            pairwise_results.append((user1, user2, int(round(float(response.text[:len(response.text)])))))
     max_scores = {}
     for user in usernames:
         max_score = 0
