@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  testrunner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: test-runner
+    ports:
+      - "8003:8003"
+    volumes:
+      - media_data:/app/media
+      - ./tests:/app/tests
+    networks:
+      - app-network
+
+volumes:
+  media_data:
+    external: true
+
+networks:
+  app-network:
+    external: true

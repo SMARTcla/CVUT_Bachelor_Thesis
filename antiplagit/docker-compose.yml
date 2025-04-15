@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  antiplagiat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: antiplagiat
+    ports:
+      - "8004:8004"
+    volumes:
+      - media_data:/app/media
+    networks:
+      - app-network
+
+volumes:
+  media_data:
+    external: true
+
+networks:
+  app-network:
+    external: true
