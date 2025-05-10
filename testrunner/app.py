@@ -34,15 +34,12 @@ def get_test_module_name(file_path):
 def run_tests_endpoint():
     """
     Endpoint for running tests.
-    
-    При получении GET-запроса с параметром file_path, функция:
-      - проверяет наличие файла,
-      - определяет имя тестового модуля и пытается его импортировать,
-      - загружает код студента,
-      - запускает тесты, вызывая функцию run_tests из тестового модуля,
-      - возвращает результат (количество пройденных тестов, общее число тестов, сообщение) в формате JSON.
-    
-    На диаграмме 4.9 видно, что этот процесс начинается с получения параметра file_path, и завершается возвратом JSON-ответа.
+    When receiving a GET request with the file_path parameter, the function:
+    - checks for the existence of the file,
+    - determines the name of the test module and attempts to import it,
+    - loads the student code,
+    - runs the tests by calling the run_tests function from the test module,
+    - returns the result (number of tests passed, total number of tests, message) in JSON format.
     """
     file_path = request.args.get('file_path')
     if not file_path or not os.path.exists(file_path):

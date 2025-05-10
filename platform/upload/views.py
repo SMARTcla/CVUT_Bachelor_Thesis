@@ -41,7 +41,7 @@ def teacher_subject_create(request):
         'form': form
     })
 
-login_required
+@login_required
 @user_passes_test(is_teacher)
 def teacher_subject_delete(request, pk):
     subject = get_object_or_404(Subject, pk=pk)
@@ -123,7 +123,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f"Welcome, {username}!")
-                return redirect('upload:subject_list')  # Добавляем неймспейс
+                return redirect('upload:subject_list')
         messages.error(request, "Invalid username or password.")
     else:
         form = AuthenticationForm()
@@ -134,7 +134,7 @@ def custom_logout(request):
     if request.method == 'POST':
         logout(request)
         messages.success(request, "You have successfully logged out.")
-    return redirect('upload:login')  # Добавляем неймспейс
+    return redirect('upload:login')
 
 @login_required
 def subject_list(request):
@@ -287,7 +287,6 @@ def upload_test_file(request, subject_abbr, assignment_number):
                 messages.error(request, f"Test file must be named '{expected_test_file_name}'.")
             else:
                 test_file_path = os.path.join(os.path.dirname(__file__), 'tests', expected_test_file_name)
-                # Убедитесь, что директория 'tests' существует
                 os.makedirs(os.path.dirname(test_file_path), exist_ok=True)
                 with open(test_file_path, 'wb+') as destination:
                     for chunk in test_file.chunks():

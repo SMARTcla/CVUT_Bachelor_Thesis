@@ -78,14 +78,8 @@ def plagiarism_score_winnowing(code1, code2, k=5, t=4):
 
 @app.route('/check-plagiarism', methods=['GET'])
 def check_plagiarism():
-    """
-    Endpoint для проверки плагиата между двумя файлами.
-    Ожидает параметры:
-      - file1: путь к первому файлу (относительный путь внутри тома /app/media)
-      - file2: путь ко второму файлу
-      - method: метод сравнения ("difflib", "tokenize", "ast", "ngrams", "winnowing")
-    Возвращает JSON с оценкой схожести.
-    """
+
+    MEDIA_FOLDER = os.environ.get("MEDIA_FOLDER_OVERRIDE", os.environ.get("MEDIA_FOLDER", "/app/media"))
     file1 = request.args.get('file1')
     file2 = request.args.get('file2')
     method = request.args.get('method', 'difflib')
@@ -93,11 +87,11 @@ def check_plagiarism():
     if not file1 or not file2:
         return jsonify({"error": "Both file1 and file2 parameters are required"}), 400
 
-    path1 = os.path.join('/app/media', file1)
-    path2 = os.path.join('/app/media', file2)
+    path1 = os.path.join(MEDIA_FOLDER, file1)
+    path2 = os.path.join(MEDIA_FOLDER, file2)
 
     if not os.path.exists(path1) or not os.path.exists(path2):
-        return jsonify({"error": "One or both files not found"}), 404
+        return jsonify({"error": f"One or both files not found {path1} and {path2}"}), 404
 
     try:
         with open(path1, "r", encoding="utf-8") as f:
@@ -127,5 +121,4 @@ def check_plagiarism():
     return jsonify(result["score"])
 
 if __name__ == "__main__":
-    # Сервис будет слушать порт 8004
     app.run(host="0.0.0.0", port=8004)
