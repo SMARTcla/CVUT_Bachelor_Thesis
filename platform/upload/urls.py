@@ -20,11 +20,9 @@ urlpatterns = [
     path('<str:subject_name>/<int:assignment_id>/', views.assignment_detail, name='assignment_detail'),
     path('<str:subject_name>/', views.subject_detail, name='subject_detail'),
 
-    # Teacher URLs
     path('teacher/subjects/', views.teacher_subject_list, name='teacher_subject_list'),
     path('teacher/subjects/create/', views.teacher_subject_create, name='teacher_subject_create'),
     path('teacher/subjects/delete/<int:pk>/', views.teacher_subject_delete, name='teacher_subject_delete'),
-
     path('teacher/subjects/<int:pk>/assignments/', views.teacher_assignment_list, name='teacher_assignment_list'),
     path('teacher/subjects/<int:pk>/assignments/create/', views.teacher_assignment_create, name='teacher_assignment_create'),
     path('teacher/assignments/delete/<int:pk>/', views.teacher_assignment_delete, name='teacher_assignment_delete'),
