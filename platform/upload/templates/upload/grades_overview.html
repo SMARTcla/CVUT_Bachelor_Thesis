@@ -3,8 +3,8 @@
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="content-container">
-    <h2>All Subjects Overview</h2>
-    <p class="mb-4">Below is the summary of your assignments across all subjects.</p>
+    <h2>Огляд усіх предметів</h2>
+    <p class="mb-4">Нижче наведено зведення ваших завдань з усіх предметів.</p>
 
     {% for subject_info in subject_data %}
         <h3>{{ subject_info.subject.name }}</h3>
@@ -12,9 +12,9 @@
             <thead>
                 <tr>
                     <th>Assignment</th>
-                    <th>Deadline</th>
-                    <th>Max Points</th>
-                    <th>Your Grade</th>
+                    <th>Термін</th>
+                    <th>Максимальна кількість балів</th>
+                    <th>Ваша оцінка</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,7 +27,7 @@
                 </tr>
                 {% endfor %}
                 <tr class="table-secondary">
-                    <td colspan="2"><strong>Total:</strong></td>
+                    <td colspan="2"><strong>Всього:</strong></td>
                     <td><strong>{{ subject_info.subject_max }}</strong></td>
                     <td><strong>{{ subject_info.subject_user }}</strong></td>
                 </tr>

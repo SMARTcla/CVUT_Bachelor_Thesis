@@ -14,14 +14,14 @@
     <h2>{{ subject.name }}</h2>
     <p>{{ subject.description }}</p>
     <hr>
-    <h3>Homework Assignments</h3>
+    <h3>Домашні завдання</h3>
     <div class="list-group">
         {% for assignment in assignments %}
             <div class="list-group-item">
                 <div class="d-flex justify-content-between align-items-center">
                     <a href="{% url 'upload:assignment_detail' subject_name=subject.name assignment_id=assignment.id %}">{{ assignment.name }}</a>
                     <span class="badge bg-primary rounded-pill">
-                        Deadline: {{ assignment.deadline }}
+                        Термін: {{ assignment.deadline }}
                     </span>
                 </div>
                 <div class="mt-2">

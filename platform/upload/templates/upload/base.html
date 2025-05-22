@@ -1,105 +1,103 @@
 {% load crispy_forms_tags static %}
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <title>Code Evaluation</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>ХНУ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Tailwind CSS CDN for rapid prototyping -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --accent: #38bdf8;
+        }
         body {
-            background-color: #e9f5ff;
+            font-family: 'Poppins', sans-serif;
         }
-        .content-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        /* Glassmorphism helper */
+        .glass {
+            @apply backdrop-blur-lg bg-white/10 rounded-2xl shadow-xl ring-1 ring-white/10;
         }
-        .subject-card {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        /* Animated underline for nav links */
+        .nav-link::{after} {
+            content: '';
+            display: block;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width .3s;
         }
-        .assignment-list {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        .assignment-list li {
-            margin-bottom: 10px;
+        .nav-link:hover::after {
+            width: 100%;
         }
     </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="{% url 'upload:subject_list' %}">
-                <img src="{% static 'CVUT_znak.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-text-top me-2">
-                Code Evaluation
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        {% if is_teacher_flag %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="teacherDropdown" role="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                    Teacher Panel
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="teacherDropdown">
-                                    <li><a class="dropdown-item" href="{% url 'upload:teacher_subject_list' %}">Manage Subjects</a></li>
-                                </ul>
-                            </li>
-                        {% endif %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'upload:grades_overview' %}">My Grades</a>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100 min-h-full flex flex-col">
+    <!-- NAVBAR -->
+    <nav class="glass sticky top-0 z-30 mx-4 mt-4 flex items-center justify-between px-6 py-3">
+        <a href="{% url 'upload:subject_list' %}" class="flex items-center gap-2 text-xl font-semibold text-white">
+            <img src="{% static 'Karazin_ZNAK.jpeg' %}" alt="Logo" class="h-8 w-8"/>
+            ХНУ
+        </a>
+        <!-- Mobile menu button -->
+        <button id="menuBtn" class="md:hidden outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 fill-slate-100" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <!-- Menu items -->
+        <ul id="menu" class="hidden flex-col gap-4 md:flex md:flex-row md:items-center text-sm font-medium">
+            {% if user.is_authenticated %}
+                {% if is_teacher_flag %}
+                    <li><a href="{% url 'upload:teacher_subject_list' %}" class="nav-link px-3 py-2 rounded hover:bg-white/10">Керувати предметами</a></li>
+                {% endif %}
+                <li><a href="{% url 'upload:grades_overview' %}" class="nav-link px-3 py-2 rounded hover:bg-white/10">Мої оцінки</a></li>
+                <!-- User dropdown -->
+                <li class="relative group">
+                    <span class="nav-link px-3 py-2 rounded cursor-pointer select-none">Профіль</span>
+                    <ul class="absolute right-0 mt-2 hidden min-w-[150px] flex-col rounded-lg bg-slate-800 p-2 shadow-lg group-hover:flex">
+                        <li>
+                            <form action="{% url 'upload:logout' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full text-left px-3 py-2 hover:bg-white/10 rounded">Logout</button>
+                            </form>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li>
-                                    <form action="{% url 'upload:logout' %}" method="post" style="margin: 0;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item">Logout</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'upload:login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'upload:signup' %}">Sign Up</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+                    </ul>
+                </li>
+            {% else %}
+                <li><a href="{% url 'upload:login' %}" class="nav-link px-3 py-2 rounded hover:bg-white/10">Login</a></li>
+                <li><a href="{% url 'upload:signup' %}" class="nav-link px-3 py-2 rounded hover:bg-white/10">Sign Up</a></li>
+            {% endif %}
+        </ul>
     </nav>
-    <div class="container mt-5">
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 container mx-auto px-4 py-10">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <div class="glass mb-4 p-4 text-sm" data-tag="{{ message.tags }}">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
         {% endif %}
-        {% block content %}
-        {% endblock %}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Default block wrapped in glass card -->
+        <div class="glass p-8">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="mt-auto py-6 text-center text-xs text-slate-400">
+        &copy; {{ now|date:"Y" }} – ХНУ
+    </footer>
+
+    <!-- Simple mobile nav toggle -->
+    <script>
+        const btn = document.getElementById('menuBtn');
+        const menu = document.getElementById('menu');
+        btn && btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+    </script>
 </body>
 </html>

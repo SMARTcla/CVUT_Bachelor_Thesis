@@ -1,17 +1,17 @@
 {% extends 'upload/base.html' %}
 {% block content %}
 <div class="content-container">
-    <h2>Manage Subjects</h2>
+    <h2>Керувати предметами</h2>
     <div class="text-end mb-3">
         <a href="{% url 'upload:teacher_subject_create' %}" class="btn btn-primary">Create Subject</a>
     </div>
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Assignments</th>
-                <th>Actions</th>
+                <th>Назва</th>
+                <th>Опис</th>
+                <th>Завдання</th>
+                <th>Дії</th>
             </tr>
         </thead>
         <tbody>

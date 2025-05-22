@@ -14,10 +14,10 @@
     {% if code_content %}
         <pre>{{ code_content|escape }}</pre>
     {% else %}
-        <p class="text-danger">No code found.</p>
+        <p class="text-danger">Курс не знайдений.</p>
     {% endif %}
 
-    <a href="{{ document.document.url }}" class="btn btn-primary" download>Download</a>
-    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+    <a href="{{ document.document.url }}" class="btn btn-primary" download>Завантажити</a>
+    <a href="javascript:history.back()" class="btn btn-secondary">Назад</a>
 </div>
 {% endblock %}

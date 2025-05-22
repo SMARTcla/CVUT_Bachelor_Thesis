@@ -5,18 +5,17 @@
 
 {% block content %}
 <div class="content-container">
-    <!-- Кнопка "Назад" -->
     <a href="{% url 'upload:assignment_detail' subject_name=assignment.subject.name assignment_id=assignment.id %}" class="btn btn-secondary mb-4">
-        &larr; Back
+        &larr; Назад
     </a>
 
-    <h2>Upload Test File for {{ assignment.name }}</h2>
-    <p><strong>Subject:</strong> {{ subject_abbr }}</p>
-    <p><strong>Assignment:</strong> {{ assignment.name }}</p>
+    <h2>Завантажити тестовий файл для {{ assignment.name }}</h2>
+    <p><strong>Предмет:</strong> {{ subject_abbr }}</p>
+    <p><strong>Завдання:</strong> {{ assignment.name }}</p>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit" class="btn btn-primary">Upload Test File</button>
+        <button type="submit" class="btn btn-primary">Завантажити тестовий файл</button>
     </form>
 </div>
 {% endblock %}

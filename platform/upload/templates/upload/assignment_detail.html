@@ -17,7 +17,7 @@
     </a>
 
     <h2>{{ assignment.name }}</h2>
-    <p><strong>Deadline:</strong> {{ assignment.deadline }}</p>
+    <p><strong>Термін:</strong> {{ assignment.deadline }}</p>
     <p><strong>Max Points:</strong> {{ assignment.max_points }}</p>
     <p><strong>Max Uploads:</strong> {{ assignment.max_uploads }}</p>
     <div>
@@ -89,7 +89,7 @@
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
     {% else %}
-        <p class="text-danger">You cannot upload more files (limit reached).</p>
+        <p class="text-danger">Ви не можете завантажити більше файлів (ліміт досягнуто).</p>
     {% endif %}
 </div>
 {% endblock %}

@@ -30,10 +30,10 @@
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'upload:login' %}">Login</a>
+                        <a class="nav-link" href="{% url 'upload:login' %}">Вхід</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'upload:signup' %}">Registration</a>
+                        <a class="nav-link" href="{% url 'upload:signup' %}">Реєстрація</a>
                     </li>
                 {% endif %}
             </ul>
@@ -67,7 +67,7 @@
                 <div>
                     <strong>{{ document.description }}</strong> -
                     <a href="{{ document.document.url }}">{{ document.document.name }}</a>
-                    <small class="text-muted">завантажено {{ document.uploaded_at }}</small>
+                    <small class="text-muted">Завантажено {{ document.uploaded_at }}</small>
                 </div>
                 <form action="{% url 'upload:delete_document' document.pk %}" method="post" onsubmit="return confirm('Ви впевнені, що хочете видалити цей файл?');">
                     {% csrf_token %}

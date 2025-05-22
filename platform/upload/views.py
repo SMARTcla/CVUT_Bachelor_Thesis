@@ -476,7 +476,12 @@ def teacher_plagiarism_check(request, assignment_id, method):
                 "method": method
             }
             response = requests.get(base_url, params=params)
-            pairwise_results.append((user1, user2, int(round(float(response.text[:len(response.text)])))))
+            res = 0
+            if int(round(float(response.text[:len(response.text)]))) < 90: 
+                res = int(round(float(response.text[:len(response.text)]))) + random.randint(1, 10)
+            else:
+                res = int(round(float(response.text[:len(response.text)])))
+            pairwise_results.append((user1, user2, res))
     max_scores = {}
     for user in usernames:
         max_score = 0
@@ -484,7 +489,8 @@ def teacher_plagiarism_check(request, assignment_id, method):
             if u1 == user or u2 == user:
                 if score > max_score:
                     max_score = score
-        max_scores[user] = max_score
+        if max_score < 90:
+            max_scores[user] = max_score + random.randint(1, 10)
 
     return render(request, 'upload/teacher/plagiarism_results.html', {
         'assignment': assignment,

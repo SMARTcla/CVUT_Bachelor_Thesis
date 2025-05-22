@@ -1,49 +1,65 @@
 {% extends 'upload/base.html' %}
 {% block content %}
-<div class="content-container">
-    <h2>Plagiarism Check Results for {{ assignment.name }}</h2>
-    <p>Method: {{ method }}</p>
+<div class="flex flex-col gap-8">
+    <!-- Header with back link -->
+    <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-semibold tracking-tight">Результати перевірки на плагіат для «{{ assignment.name }}»</h2>
+            <p class="mt-1 text-sm text-slate-400">Метод: {{ method }}</p>
+        </div>
+        <a href="{% url 'upload:teacher_assignment_submissions' pk=assignment.pk %}"
+           class="inline-flex items-center gap-2 rounded bg-slate-700/60 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            Назад
+        </a>
+    </header>
 
-    <h3>Pairwise Comparisons</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Student 1</th>
-                <th>Student 2</th>
-                <th>Similarity (%)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for u1, u2, score in pairwise_results %}
-            <tr>
-                <td>{{ u1 }}</td>
-                <td>{{ u2 }}</td>
-                <td>{{ score|floatformat:2 }}%</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Pairwise comparisons table -->
+    <section>
+        <h3 class="text-lg font-medium mb-4">Попарні порівняння</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-700 text-sm">
+                <thead class="bg-slate-800/60 uppercase tracking-wider text-xs font-semibold">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Студент 1</th>
+                        <th class="px-6 py-3 text-left">Студент 2</th>
+                        <th class="px-6 py-3 text-left">Подібність (%)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/70">
+                    {% for u1, u2, score in pairwise_results %}
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="px-6 py-4 whitespace-nowrap">{{ u1 }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ u2 }}</td>
+                        <td class="px-6 py-4">{{ score }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-    <h3>Maximum Similarity by Student</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Student</th>
-                <th>Maximum Similarity (%)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user, score in max_scores.items %}
-            <tr>
-                <td>{{ user }}</td>
-                <td>{{ score|floatformat:2 }}%</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{% url 'upload:teacher_assignment_submissions' pk=assignment.pk %}" class="btn btn-secondary mt-3">
-        &larr; Back to Assignment Submissions
-    </a>
+    <!-- Max similarity per student table -->
+    <section>
+        <h3 class="text-lg font-medium mb-4">Максимальна схожість учня</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-700 text-sm">
+                <thead class="bg-slate-800/60 uppercase tracking-wider text-xs font-semibold">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Студент</th>
+                        <th class="px-6 py-3 text-left">Максимальна схожість (%)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/70">
+                    {% for user, score in max_scores.items %}
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="px-6 py-4 whitespace-nowrap">{{ user }}</td>
+                        <td class="px-6 py-4">{{ score|floatformat:2 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 {% endblock %}
