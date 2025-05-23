@@ -5,7 +5,6 @@
 
 {% block content %}
 <div class="content-container">
-    <!-- Кнопка "Назад" -->
     <a href="{% url 'upload:assignment_detail' subject_name=assignment.subject.name assignment_id=assignment.id %}" class="btn btn-secondary mb-4">
         &larr; Back
     </a>

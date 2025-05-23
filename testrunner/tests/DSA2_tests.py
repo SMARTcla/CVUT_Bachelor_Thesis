@@ -1,5 +1,3 @@
-# upload/tests/DSA2_tests.py
-
 def run_tests(student_module):
     """
     Executes the tests for the pow_cal(a, b) function.
@@ -12,7 +10,7 @@ def run_tests(student_module):
         test_cases = [
             {'a': 2, 'b': 3, 'expected': 8},
             {'a': -1, 'b': 2, 'expected': 1},
-            {'a': 0, 'b': 0, 'expected': 1},   # Depending on definition
+            {'a': 0, 'b': 0, 'expected': 1}, 
             {'a': 5, 'b': 4, 'expected': 625},
             {'a': 10, 'b': 3, 'expected': 1000},
             {'a': 3, 'b': 3, 'expected': 27},

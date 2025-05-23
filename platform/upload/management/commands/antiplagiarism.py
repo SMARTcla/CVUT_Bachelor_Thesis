@@ -47,7 +47,6 @@ def plagiarism_score_ngrams(code1, code2, n=5):
     return similarity * 100
 
 def plagiarism_score_winnowing(code1, code2, k=5, t=4):
-    # Simplified Winnowing algorithm
     def hash_ngrams(code, k):
         return [hash(code[i:i+k]) for i in range(len(code)-k+1)]
     

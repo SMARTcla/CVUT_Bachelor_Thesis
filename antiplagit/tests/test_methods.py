@@ -1,5 +1,3 @@
-# Updated tests in antiplagit/tests/test_methods.py
-
 from app import (
     plagiarism_score_difflib,
     plagiarism_score_tokenize,

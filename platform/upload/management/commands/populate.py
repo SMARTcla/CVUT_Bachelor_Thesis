@@ -31,7 +31,6 @@ def populate():
                 'deadline': date.today() + timedelta(days=7), 
                 'number': 5
             },
-            # ... other PDA assignments ...
         ],
         'DSA': [
             {
@@ -92,10 +91,8 @@ def populate():
             },
         ],
         'OMO': [
-            # ... OMO assignments ...
         ],
         'NSS': [
-            # ... NSS assignments ...
         ],
     }
 

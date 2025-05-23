@@ -1,5 +1,3 @@
-# upload/tests/DSA3_tests.py
-
 def run_tests(student_module):
     """
     Executes the tests for the len_arr(arr) function.
