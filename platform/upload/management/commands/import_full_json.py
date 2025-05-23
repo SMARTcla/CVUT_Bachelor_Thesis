@@ -25,12 +25,10 @@ class Command(BaseCommand):
         if not isinstance(data, list):
             raise CommandError("The JSON file should contain a list of objects.")
         
-        # Import users from auth.user
         users_data = [obj for obj in data if obj.get('model') == 'auth.user']
         for user_obj in users_data:
             fields = user_obj.get('fields', {})
             user_id = user_obj.get('pk')
-            # Пароли уже захешированы, поэтому просто сохраняем их как есть.
             defaults = {
                 'username': fields.get('username'),
                 'password': fields.get('password'),
@@ -50,8 +48,6 @@ class Command(BaseCommand):
                 self.stdout.write(f"Created user: {user.username}")
             else:
                 self.stdout.write(f"Updated user: {user.username}")
-        
-        # Import subjects from upload.subject
         subjects_data = [obj for obj in data if obj.get('model') == 'upload.subject']
         for subj_obj in subjects_data:
             fields = subj_obj.get('fields', {})
@@ -67,7 +63,6 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"Updated subject: {subject.name}")
         
-        # Import assignments from upload.assignment
         assignments_data = [obj for obj in data if obj.get('model') == 'upload.assignment']
         for assign_obj in assignments_data:
             fields = assign_obj.get('fields', {})
@@ -103,7 +98,6 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(f"Updated assignment: {assignment.name}")
         
-        # Import documents from upload.document
         documents_data = [obj for obj in data if obj.get('model') == 'upload.document']
         for doc_obj in documents_data:
             fields = doc_obj.get('fields', {})

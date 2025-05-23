@@ -1,5 +1,3 @@
-# upload/views.py
-
 import importlib.util
 import os
 import re 
@@ -151,7 +149,6 @@ def subject_list(request):
 def subject_detail(request, subject_name):
     subject = get_object_or_404(Subject, name=subject_name)
     assignments = subject.assignments.all()
-    # Retrieve grades for the current user
     user = request.user
     user_documents = Document.objects.filter(user=user, assignment__subject=subject)
     grades = {doc.assignment.name: doc.grade for doc in user_documents}
@@ -266,7 +263,7 @@ def delete_document(request, pk):
         document.document.delete()
         document.delete()
         messages.success(request, "File successfully deleted.")
-        return redirect('upload:assignment_detail', subject_name=document.assignment.subject.name, assignment_id=document.assignment.id)  # Добавляем неймспейс
+        return redirect('upload:assignment_detail', subject_name=document.assignment.subject.name, assignment_id=document.assignment.id)
     return render(request, 'upload/delete_document.html', {'document': document})
 
 
@@ -292,7 +289,7 @@ def upload_test_file(request, subject_abbr, assignment_number):
                     for chunk in test_file.chunks():
                         destination.write(chunk)
                 messages.success(request, "Test file uploaded successfully.")
-                return redirect('upload:assignment_detail', subject_name=subject_abbr, assignment_id=assignment.id)  # Добавляем неймспейс
+                return redirect('upload:assignment_detail', subject_name=subject_abbr, assignment_id=assignment.id)
         else:
             messages.error(request, "Invalid form submission.")
     else:

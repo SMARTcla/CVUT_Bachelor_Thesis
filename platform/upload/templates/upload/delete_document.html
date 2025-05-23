@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="content-container">
-    <h2>Видалити файл: {{ document.description }}</h2>
+    <h2>Delete file: {{ document.description }}</h2>
     <p>Ви впевнені, що хочете видалити цей файл?</p>
     <form method="post">
         {% csrf_token %}

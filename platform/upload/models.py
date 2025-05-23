@@ -51,7 +51,7 @@ class Document(models.Model):
         validators=[validate_file_extension]
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    test_result = models.CharField(max_length=255, blank=True, null=True)
+    test_result = models.TextField(blank=True, null=True)
     grade = models.PositiveIntegerField(default=0)
 
     def __str__(self):

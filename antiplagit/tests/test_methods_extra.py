@@ -1,5 +1,3 @@
-# antiplagit/tests/test_methods_extra.py
-
 import pytest
 import tempfile
 import os

@@ -1,5 +1,3 @@
-# upload/tests/DSA4_tests.py
-
 def run_tests(student_module):
     """
     Executes the tests for the count_consonants(s) function.
