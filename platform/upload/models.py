@@ -1,58 +1,76 @@
-# upload/models.py
-
-from django.db import models
-from django.contrib.auth.models import User
-from datetime import date, timedelta
-import os
+from django import forms
+from .models import Document, Subject, Assignment
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import get_user_model 
 from django.core.exceptions import ValidationError
-import markdown
-from django.utils.html import mark_safe
+import os
+import re
 
-def document_upload_path(instance, filename):
-    username = instance.user.username
-    subject_name = instance.assignment.subject.name
-    assignment_no = instance.assignment.number
-    return f"{username}/{subject_name}/{assignment_no}/{filename}"
-    
+User = get_user_model()
+
+# ——— Validator to reject any HTML/XML tags ———
+NOT_HTML_RE = re.compile(r'\A(?!.*<[^>]+>).*?\Z', re.DOTALL)
+
+def validate_not_html(value):
+    """
+    Raises ValidationError if the input contains any <tag>…</tag> or standalone <foo>.
+    """
+    if not NOT_HTML_RE.match(value):
+        raise ValidationError("Input may not contain HTML/XML tags.")
+
+# ——— File‐extension validator for .py ———
 def validate_file_extension(value):
     ext = os.path.splitext(value.name)[1]
     valid_extensions = ['.py']
     if not ext.lower() in valid_extensions:
         raise ValidationError('Unsupported file extension.')
 
-class Subject(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
+# ——— Forms ———
 
-    def __str__(self):
-        return self.name
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ('description', 'document', )
 
-class Assignment(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='assignments')
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    deadline = models.DateField()
-    number = models.PositiveIntegerField()
-    max_points = models.PositiveIntegerField(default=10, help_text="Maximum points for this assignment.")
-    max_uploads = models.PositiveIntegerField(default=20, help_text="Maximum number of downloads for a student.")
 
-    def __str__(self):
-        return self.name
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True)
 
-    def get_description_markdown(self):
-        return mark_safe(markdown.markdown(self.description))
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
 
-class Document(models.Model):
-    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='documents')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    description = models.CharField(max_length=255, blank=True)
-    document = models.FileField(
-        upload_to=document_upload_path,
-        validators=[validate_file_extension]
+
+class SubjectForm(forms.ModelForm):
+    class Meta:
+        model = Subject
+        fields = ['name', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows':4}),
+        }
+        # attach our no‐HTML validator to both fields
+        validators = {
+            'name': [validate_not_html],
+            'description': [validate_not_html],
+        }
+
+
+class AssignmentForm(forms.ModelForm):
+    class Meta:
+        model = Assignment
+        fields = ['name', 'description', 'deadline', 'number', 'max_points', 'max_uploads']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows':4}),
+        }
+        validators = {
+            'name': [validate_not_html],
+            'description': [validate_not_html],
+        }
+
+
+class TestFileForm(forms.Form):
+    test_file = forms.FileField(
+        label='Select Test File',
+        validators=[validate_file_extension],
+        help_text='Upload a Python (.py) test file following the naming convention.'
     )
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    test_result = models.TextField(blank=True, null=True)
-    grade = models.PositiveIntegerField(default=0)
-
-    def __str__(self):
-        return self.description or self.document.name
